@@ -24,7 +24,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Sync .pre-commit-hooks.yaml from pyproject.toml
+      - name: Sync hooks and README versions from pyproject.toml
         run: python scripts/sync_hooks.py
 
       - name: Read ansible-dev-tools version from pyproject.toml
@@ -57,9 +57,9 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .pre-commit-hooks.yaml
+          git add .pre-commit-hooks.yaml README.md
           if ! git diff --cached --quiet; then
-            git commit -m "deps: sync .pre-commit-hooks.yaml with pyproject.toml"
+            git commit -m "deps: sync hooks and README versions from pyproject.toml"
             git push
           fi
 

@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
-"""Sync pinned versions from pyproject.toml into .pre-commit-hooks.yaml.
+"""Sync pinned versions from pyproject.toml into .pre-commit-hooks.yaml and README.md.
 
 Reads the [project.optional-dependencies] hooks list from pyproject.toml,
-extracts the pinned package==version entries, and rewrites every
-additional_dependencies list in .pre-commit-hooks.yaml to match.
+extracts the pinned package==version entries, and rewrites:
+
+  1. Every additional_dependencies list in .pre-commit-hooks.yaml
+  2. All version callouts in README.md (inline references, rev: tags, etc.)
 
 Rules:
   - Every hook gets the ansible-dev-tools pin.
   - The build-import hook additionally gets the galaxy-importer pin.
+  - README rev tags (rev: vX.Y.Z / rev = "vX.Y.Z") track the ansible-dev-tools version.
 """
 
 import re
@@ -22,6 +25,7 @@ except ModuleNotFoundError:
 REPO_ROOT = Path(__file__).resolve().parent.parent
 PYPROJECT = REPO_ROOT / "pyproject.toml"
 HOOKS_YAML = REPO_ROOT / ".pre-commit-hooks.yaml"
+README = REPO_ROOT / "README.md"
 
 BUILD_IMPORT_ID = "build-import"
 
@@ -37,6 +41,12 @@ def parse_pins(pyproject_path: Path) -> dict[str, str]:
         if match:
             pins[match.group(1).lower()] = entry.strip()
     return pins
+
+
+def get_version(pins: dict[str, str], package: str) -> str:
+    """Extract just the version string from a pin like 'pkg==1.2.3'."""
+    pin = pins.get(package, "")
+    return pin.split("==", 1)[1] if "==" in pin else ""
 
 
 def build_dep_string(pins: dict[str, str], hook_id: str) -> str:
@@ -57,9 +67,8 @@ def build_dep_string(pins: dict[str, str], hook_id: str) -> str:
     return f"['{adt_pin}']"
 
 
-def sync(pyproject_path: Path, hooks_path: Path) -> bool:
-    """Sync versions and return True if any changes were made."""
-    pins = parse_pins(pyproject_path)
+def sync_hooks(pins: dict[str, str], hooks_path: Path) -> bool:
+    """Sync .pre-commit-hooks.yaml and return True if changes were made."""
     content = hooks_path.read_text()
     original = content
 
@@ -87,12 +96,64 @@ def sync(pyproject_path: Path, hooks_path: Path) -> bool:
     return False
 
 
+def sync_readme(pins: dict[str, str], readme_path: Path) -> bool:
+    """Sync version references in README.md and return True if changes were made."""
+    content = readme_path.read_text()
+    original = content
+
+    adt_version = get_version(pins, "ansible-dev-tools")
+    gi_version = get_version(pins, "galaxy-importer")
+
+    if not adt_version:
+        print("ERROR: ansible-dev-tools version not found", file=sys.stderr)
+        sys.exit(1)
+
+    # ansible-dev-tools==X.Y.Z  (inline references)
+    content = re.sub(
+        r"ansible-dev-tools==[\d.]+",
+        f"ansible-dev-tools=={adt_version}",
+        content,
+    )
+
+    # galaxy-importer==X.Y.Z  (inline references)
+    if gi_version:
+        content = re.sub(
+            r"galaxy-importer==[\d.]+",
+            f"galaxy-importer=={gi_version}",
+            content,
+        )
+
+    # rev: vX.Y.Z  (YAML examples)
+    content = re.sub(
+        r"(rev:\s+)v[\d.]+",
+        rf"\g<1>v{adt_version}",
+        content,
+    )
+
+    # rev = "vX.Y.Z"  (TOML examples)
+    content = re.sub(
+        r'(rev\s*=\s*")v[\d.]+"',
+        rf'\g<1>v{adt_version}"',
+        content,
+    )
+
+    if content != original:
+        readme_path.write_text(content)
+        return True
+    return False
+
+
 def main() -> None:
-    changed = sync(PYPROJECT, HOOKS_YAML)
-    if changed:
-        print("Updated .pre-commit-hooks.yaml with versions from pyproject.toml")
-    else:
-        print(".pre-commit-hooks.yaml is already in sync")
+    pins = parse_pins(PYPROJECT)
+    changed_hooks = sync_hooks(pins, HOOKS_YAML)
+    changed_readme = sync_readme(pins, README)
+
+    if changed_hooks:
+        print("Updated .pre-commit-hooks.yaml")
+    if changed_readme:
+        print("Updated README.md")
+    if not changed_hooks and not changed_readme:
+        print("Everything is already in sync")
 
 
 if __name__ == "__main__":

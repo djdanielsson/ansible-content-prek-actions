@@ -47,7 +47,7 @@ Add to your collection's `.pre-commit-config.yaml`:
 ```yaml
 repos:
   - repo: https://github.com/djdanielsson/ansible-content-prek-actions
-    rev: v0.1.0
+    rev: v26.2.0
     hooks:
       - id: ansible-lint
       - id: changelog
@@ -73,7 +73,7 @@ That's it -- dependencies are installed automatically into isolated environments
 ```yaml
 repos:
   - repo: https://github.com/djdanielsson/ansible-content-prek-actions
-    rev: v0.1.0
+    rev: v26.2.0
     hooks:
       # Fast hooks -- run on every commit
       - id: ansible-lint
@@ -93,7 +93,7 @@ repos:
 ```toml
 [[repos]]
 repo = "https://github.com/djdanielsson/ansible-content-prek-actions"
-rev = "v0.1.0"
+rev = "v26.2.0"
 hooks = [
   # Fast hooks -- run on every commit
   { id = "ansible-lint" },
@@ -118,7 +118,7 @@ versions. To use a different release of ansible-dev-tools, override
 hooks:
   - id: ansible-lint
     additional_dependencies:
-      - ansible-dev-tools==25.4.0
+      - ansible-dev-tools==26.2.0
 ```
 
 For the `build-import` hook, remember to include `galaxy-importer` as well:
@@ -127,7 +127,7 @@ For the `build-import` hook, remember to include `galaxy-importer` as well:
 hooks:
   - id: build-import
     additional_dependencies:
-      - ansible-dev-tools==25.4.0
+      - ansible-dev-tools==26.2.0
       - galaxy-importer==0.4.37
 ```
 
