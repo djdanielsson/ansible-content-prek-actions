@@ -4,22 +4,31 @@ Pre-commit / [prek](https://github.com/j178/prek) hooks for testing Ansible coll
 
 ## Available Hooks
 
-| Hook ID | Description | Pinned Dependencies | Speed |
-| --- | --- | --- | --- |
-| `ansible-lint` | Run ansible-lint on the collection | `ansible-lint==26.3.0` | Fast |
-| `changelog` | Validate changelog fragments exist and are formatted correctly | `pyyaml==6.0.2` | Fast |
-| `build-import` | Build the collection tarball and run galaxy-importer | `ansible-core==2.18.14`, `galaxy-importer==0.4.37` | Medium |
-| `sanity` | Run tox-ansible sanity tests | `tox-ansible==26.3.0` | **Slow** |
-| `unit` | Run tox-ansible unit tests | `tox-ansible==26.3.0` | **Slow** |
-| `integration` | Run tox-ansible integration tests | `tox-ansible==26.3.0` | **Slow** |
-| `ee-build` | Build an execution environment image | `ansible-builder==3.1.0` | **Slow** |
+| Hook ID | Description | Speed |
+| --- | --- | --- |
+| `ansible-lint` | Run ansible-lint on the collection | Fast |
+| `changelog` | Validate changelog fragments exist and are formatted correctly | Fast |
+| `build-import` | Build the collection tarball and run galaxy-importer | Medium |
+| `sanity` | Run tox-ansible sanity tests | **Slow** |
+| `unit` | Run tox-ansible unit tests | **Slow** |
+| `integration` | Run tox-ansible integration tests | **Slow** |
+| `ee-build` | Build an execution environment image | **Slow** |
 
 > **Note:** Hooks marked **Slow** default to `stages: [manual]` and will not run
 > on every commit. See [Running slow hooks](#running-slow-hooks) below.
 
-All hooks use `language: python`, which means pre-commit/prek automatically
-creates an **isolated virtual environment** per hook and installs the pinned
-dependencies. No manual `pip install` is required.
+All hooks use `language: python` with
+[ansible-dev-tools==26.2.0](https://github.com/ansible/ansible-dev-tools) as the
+dependency. This is the official Ansible meta-package that bundles `ansible-lint`,
+`ansible-core`, `ansible-builder`, `tox-ansible`, `pyyaml`, and more -- all at
+versions tested to work together. Pre-commit/prek automatically creates an
+**isolated virtual environment** and installs everything. No manual `pip install`
+is required.
+
+The `build-import` hook additionally installs `galaxy-importer==0.4.37`, which is
+not bundled in ansible-dev-tools.
+
+> **Requires Python >= 3.11** (per ansible-dev-tools).
 
 ## Quick Start
 
@@ -101,15 +110,24 @@ hooks = [
 
 ## Overriding Dependency Versions
 
-Each hook ships with pinned dependency versions for reproducibility. To override
-a version (e.g. to match your project's ansible-core), use
+All hooks pin `ansible-dev-tools==26.2.0` to get a known-good set of tool
+versions. To use a different release of ansible-dev-tools, override
 `additional_dependencies` in your config:
+
+```yaml
+hooks:
+  - id: ansible-lint
+    additional_dependencies:
+      - ansible-dev-tools==25.4.0
+```
+
+For the `build-import` hook, remember to include `galaxy-importer` as well:
 
 ```yaml
 hooks:
   - id: build-import
     additional_dependencies:
-      - ansible-core==2.17.8
+      - ansible-dev-tools==25.4.0
       - galaxy-importer==0.4.37
 ```
 
@@ -154,8 +172,6 @@ prek install --hook-type pre-push
 Runs [ansible-lint](https://ansible.readthedocs.io/projects/lint/) against
 the collection. Any arguments passed via `args:` are forwarded directly.
 
-Pinned: `ansible-lint==26.3.0`
-
 ### changelog
 
 Validates that changelog fragments under `changelogs/fragments/` exist and are
@@ -168,34 +184,26 @@ hooks:
     args: [--ref, develop]
 ```
 
-Pinned: `pyyaml==6.0.2`
-
 ### build-import
 
 Builds the Ansible collection tarball and runs
 [galaxy-importer](https://github.com/ansible/galaxy-importer) validation on it.
 
-Pinned: `ansible-core==2.18.14`, `galaxy-importer==0.4.37`
+Extra dependency: `galaxy-importer==0.4.37` (not bundled in ansible-dev-tools).
 
 ### sanity
 
 Runs the `tox-ansible` sanity test matrix. If no `tox-ansible.ini` is found in
 the collection root, a sensible default is created automatically.
 
-Pinned: `tox-ansible==26.3.0`
-
 ### unit
 
 Runs the `tox-ansible` unit test matrix. Same `tox-ansible.ini` behavior as sanity.
-
-Pinned: `tox-ansible==26.3.0`
 
 ### integration
 
 Runs the `tox-ansible` integration test matrix. Same `tox-ansible.ini` behavior
 as sanity.
-
-Pinned: `tox-ansible==26.3.0`
 
 ### ee-build
 
@@ -203,8 +211,6 @@ Builds an Ansible execution environment using
 [ansible-builder](https://ansible.readthedocs.io/projects/builder/). Requires
 an `execution-environment.yml` in the collection root and either `podman` or
 `docker` installed.
-
-Pinned: `ansible-builder==3.1.0`
 
 ## Licensing
 

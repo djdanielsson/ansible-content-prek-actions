@@ -8,7 +8,7 @@
   language: python
   pass_filenames: false
   always_run: true
-  additional_dependencies: ['ansible-lint==26.3.0']
+  additional_dependencies: ['ansible-dev-tools==26.2.0']
 
 - id: changelog
   name: Validate Changelog
@@ -20,7 +20,7 @@
   language: python
   pass_filenames: false
   always_run: true
-  additional_dependencies: ['pyyaml==6.0.2']
+  additional_dependencies: ['ansible-dev-tools==26.2.0']
 
 - id: build-import
   name: Build and Import Collection
@@ -30,7 +30,7 @@
   language: python
   pass_filenames: false
   always_run: true
-  additional_dependencies: ['ansible-core==2.18.14', 'galaxy-importer==0.4.37']
+  additional_dependencies: ['ansible-dev-tools==26.2.0', 'galaxy-importer==0.4.37']
 
 - id: sanity
   name: Ansible Sanity Tests
@@ -42,7 +42,7 @@
   pass_filenames: false
   always_run: true
   stages: [manual]
-  additional_dependencies: ['tox-ansible==26.3.0']
+  additional_dependencies: ['ansible-dev-tools==26.2.0']
 
 - id: unit
   name: Ansible Unit Tests
@@ -54,7 +54,7 @@
   pass_filenames: false
   always_run: true
   stages: [manual]
-  additional_dependencies: ['tox-ansible==26.3.0']
+  additional_dependencies: ['ansible-dev-tools==26.2.0']
 
 - id: integration
   name: Ansible Integration Tests
@@ -66,7 +66,7 @@
   pass_filenames: false
   always_run: true
   stages: [manual]
-  additional_dependencies: ['tox-ansible==26.3.0']
+  additional_dependencies: ['ansible-dev-tools==26.2.0']
 
 - id: ee-build
   name: Build Execution Environment
@@ -78,4 +78,4 @@
   pass_filenames: false
   always_run: true
   stages: [manual]
-  additional_dependencies: ['ansible-builder==3.1.0']
+  additional_dependencies: ['ansible-dev-tools==26.2.0']

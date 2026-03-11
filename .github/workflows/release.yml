@@ -1,0 +1,105 @@
+---
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Sync .pre-commit-hooks.yaml from pyproject.toml
+        run: python scripts/sync_hooks.py
+
+      - name: Read ansible-dev-tools version from pyproject.toml
+        id: versions
+        run: |
+          adt_version=$(python3 -c "
+          import tomllib, re, pathlib
+          data = tomllib.loads(pathlib.Path('pyproject.toml').read_text())
+          for dep in data['project']['optional-dependencies']['hooks']:
+              m = re.match(r'ansible-dev-tools==(.+)', dep.strip())
+              if m:
+                  print(m.group(1))
+                  break
+          ")
+          echo "adt_version=${adt_version}" >> "$GITHUB_OUTPUT"
+          echo "tag=v${adt_version}" >> "$GITHUB_OUTPUT"
+
+      - name: Check if tag already exists
+        id: check_tag
+        run: |
+          tag="${{ steps.versions.outputs.tag }}"
+          if git rev-parse "refs/tags/${tag}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit hook sync changes (if any)
+        if: steps.check_tag.outputs.exists == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .pre-commit-hooks.yaml
+          if ! git diff --cached --quiet; then
+            git commit -m "deps: sync .pre-commit-hooks.yaml with pyproject.toml"
+            git push
+          fi
+
+      - name: Create tag and release
+        if: steps.check_tag.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="${{ steps.versions.outputs.tag }}"
+          adt_version="${{ steps.versions.outputs.adt_version }}"
+
+          git tag "${tag}"
+          git push origin "${tag}"
+
+          gh release create "${tag}" \
+            --title "${tag}" \
+            --notes "$(cat <<EOF
+          Pinned to [ansible-dev-tools v${adt_version}](https://pypi.org/project/ansible-dev-tools/${adt_version}/).
+
+          ## Dependency versions
+
+          \`\`\`
+          $(python3 -c "
+          import tomllib, pathlib
+          data = tomllib.loads(pathlib.Path('pyproject.toml').read_text())
+          for dep in data['project']['optional-dependencies']['hooks']:
+              print(f'  {dep}')
+          ")
+          \`\`\`
+
+          ## Usage
+
+          \`\`\`yaml
+          repos:
+            - repo: https://github.com/${{ github.repository }}
+              rev: ${tag}
+              hooks:
+                - id: ansible-lint
+                - id: changelog
+                - id: build-import
+          \`\`\`
+          EOF
+          )"

@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "ansible-content-prek-actions"
 version = "0.1.0"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 description = "Pre-commit hooks for Ansible collection repositories"
 license = {text = "Apache-2.0"}
 
@@ -16,6 +16,14 @@ run-tox-sanity = "hooks.tox_runner:main_sanity"
 run-tox-unit = "hooks.tox_runner:main_unit"
 run-tox-integration = "hooks.tox_runner:main_integration"
 ansible-ee-build = "hooks.ee_build:main"
+
+[project.optional-dependencies]
+# Pinned versions that Dependabot tracks. When Dependabot bumps a version here,
+# update the matching pin in .pre-commit-hooks.yaml to keep them in sync.
+hooks = [
+    "ansible-dev-tools==26.2.0",
+    "galaxy-importer==0.4.37",
+]
 
 [tool.setuptools.packages.find]
 include = ["hooks*"]
