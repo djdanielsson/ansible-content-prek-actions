@@ -1,0 +1,74 @@
+---
+- id: ansible-lint
+  name: Ansible Lint
+  description: >-
+    Run ansible-lint to check playbooks for practices and behavior
+    that could potentially be improved.
+  entry: hooks/ansible-lint.sh
+  language: script
+  pass_filenames: false
+  always_run: true
+
+- id: changelog
+  name: Validate Changelog
+  description: >-
+    Validate that changelog fragments exist and are properly formatted.
+    Defaults to comparing against the 'main' branch. Override the base
+    ref with args: [--ref, develop].
+  entry: hooks/changelog.sh
+  language: script
+  pass_filenames: false
+  always_run: true
+
+- id: build-import
+  name: Build and Import Collection
+  description: >-
+    Build the collection tarball and run galaxy-importer to validate it.
+  entry: hooks/build-import.sh
+  language: script
+  pass_filenames: false
+  always_run: true
+
+- id: sanity
+  name: Ansible Sanity Tests
+  description: >-
+    WARNING: SLOW. Run tox-ansible sanity tests. Uses tox-ansible.ini
+    if present, otherwise creates a sensible default.
+  entry: hooks/sanity.sh
+  language: script
+  pass_filenames: false
+  always_run: true
+  stages: [manual]
+
+- id: unit
+  name: Ansible Unit Tests
+  description: >-
+    WARNING: SLOW. Run tox-ansible unit tests. Uses tox-ansible.ini
+    if present, otherwise creates a sensible default.
+  entry: hooks/unit.sh
+  language: script
+  pass_filenames: false
+  always_run: true
+  stages: [manual]
+
+- id: integration
+  name: Ansible Integration Tests
+  description: >-
+    WARNING: SLOW. Run tox-ansible integration tests. Uses tox-ansible.ini
+    if present, otherwise creates a sensible default.
+  entry: hooks/integration.sh
+  language: script
+  pass_filenames: false
+  always_run: true
+  stages: [manual]
+
+- id: ee-build
+  name: Build Execution Environment
+  description: >-
+    WARNING: SLOW. Build an Ansible execution environment image using
+    ansible-builder. Requires podman or docker.
+  entry: hooks/ee-build.sh
+  language: script
+  pass_filenames: false
+  always_run: true
+  stages: [manual]
