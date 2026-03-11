@@ -4,18 +4,22 @@ Pre-commit / [prek](https://github.com/j178/prek) hooks for testing Ansible coll
 
 ## Available Hooks
 
-| Hook ID | Description | Required Packages | Speed |
+| Hook ID | Description | Pinned Dependencies | Speed |
 | --- | --- | --- | --- |
-| `ansible-lint` | Run ansible-lint on the collection | `ansible-lint` | Fast |
-| `changelog` | Validate changelog fragments exist and are formatted correctly | `pyyaml` | Fast |
-| `build-import` | Build the collection tarball and run galaxy-importer | `ansible-core`, `galaxy-importer` | Medium |
-| `sanity` | Run tox-ansible sanity tests | `tox-ansible` | **Slow** |
-| `unit` | Run tox-ansible unit tests | `tox-ansible` | **Slow** |
-| `integration` | Run tox-ansible integration tests | `tox-ansible` | **Slow** |
-| `ee-build` | Build an execution environment image | `ansible-builder`, `podman` or `docker` | **Slow** |
+| `ansible-lint` | Run ansible-lint on the collection | `ansible-lint==26.3.0` | Fast |
+| `changelog` | Validate changelog fragments exist and are formatted correctly | `pyyaml==6.0.2` | Fast |
+| `build-import` | Build the collection tarball and run galaxy-importer | `ansible-core==2.18.14`, `galaxy-importer==0.4.37` | Medium |
+| `sanity` | Run tox-ansible sanity tests | `tox-ansible==26.3.0` | **Slow** |
+| `unit` | Run tox-ansible unit tests | `tox-ansible==26.3.0` | **Slow** |
+| `integration` | Run tox-ansible integration tests | `tox-ansible==26.3.0` | **Slow** |
+| `ee-build` | Build an execution environment image | `ansible-builder==3.1.0` | **Slow** |
 
 > **Note:** Hooks marked **Slow** default to `stages: [manual]` and will not run
 > on every commit. See [Running slow hooks](#running-slow-hooks) below.
+
+All hooks use `language: python`, which means pre-commit/prek automatically
+creates an **isolated virtual environment** per hook and installs the pinned
+dependencies. No manual `pip install` is required.
 
 ## Quick Start
 
@@ -50,6 +54,8 @@ prek install
 # or pre-commit
 pre-commit install
 ```
+
+That's it -- dependencies are installed automatically into isolated environments.
 
 ## Full Configuration
 
@@ -93,6 +99,20 @@ hooks = [
 ]
 ```
 
+## Overriding Dependency Versions
+
+Each hook ships with pinned dependency versions for reproducibility. To override
+a version (e.g. to match your project's ansible-core), use
+`additional_dependencies` in your config:
+
+```yaml
+hooks:
+  - id: build-import
+    additional_dependencies:
+      - ansible-core==2.17.8
+      - galaxy-importer==0.4.37
+```
+
 ## Running Slow Hooks
 
 Hooks marked **Slow** (`sanity`, `unit`, `integration`, `ee-build`) are configured
@@ -134,9 +154,7 @@ prek install --hook-type pre-push
 Runs [ansible-lint](https://ansible.readthedocs.io/projects/lint/) against
 the collection. Any arguments passed via `args:` are forwarded directly.
 
-```bash
-pip install ansible-lint
-```
+Pinned: `ansible-lint==26.3.0`
 
 ### changelog
 
@@ -150,44 +168,34 @@ hooks:
     args: [--ref, develop]
 ```
 
-```bash
-pip install pyyaml
-```
+Pinned: `pyyaml==6.0.2`
 
 ### build-import
 
 Builds the Ansible collection tarball and runs
 [galaxy-importer](https://github.com/ansible/galaxy-importer) validation on it.
 
-```bash
-pip install ansible-core galaxy-importer
-```
+Pinned: `ansible-core==2.18.14`, `galaxy-importer==0.4.37`
 
 ### sanity
 
 Runs the `tox-ansible` sanity test matrix. If no `tox-ansible.ini` is found in
 the collection root, a sensible default is created automatically.
 
-```bash
-pip install tox-ansible
-```
+Pinned: `tox-ansible==26.3.0`
 
 ### unit
 
 Runs the `tox-ansible` unit test matrix. Same `tox-ansible.ini` behavior as sanity.
 
-```bash
-pip install tox-ansible
-```
+Pinned: `tox-ansible==26.3.0`
 
 ### integration
 
 Runs the `tox-ansible` integration test matrix. Same `tox-ansible.ini` behavior
 as sanity.
 
-```bash
-pip install tox-ansible
-```
+Pinned: `tox-ansible==26.3.0`
 
 ### ee-build
 
@@ -196,9 +204,7 @@ Builds an Ansible execution environment using
 an `execution-environment.yml` in the collection root and either `podman` or
 `docker` installed.
 
-```bash
-pip install ansible-builder
-```
+Pinned: `ansible-builder==3.1.0`
 
 ## Licensing
 

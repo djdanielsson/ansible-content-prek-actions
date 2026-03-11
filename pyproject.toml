@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ansible-content-prek-actions"
+version = "0.1.0"
+requires-python = ">=3.10"
+description = "Pre-commit hooks for Ansible collection repositories"
+license = {text = "Apache-2.0"}
+
+[project.scripts]
+validate-changelog = "hooks.validate_changelog:cli"
+build-import-collection = "hooks.build_import:main"
+run-tox-sanity = "hooks.tox_runner:main_sanity"
+run-tox-unit = "hooks.tox_runner:main_unit"
+run-tox-integration = "hooks.tox_runner:main_integration"
+ansible-ee-build = "hooks.ee_build:main"
+
+[tool.setuptools.packages.find]
+include = ["hooks*"]

@@ -14,13 +14,6 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-try:
-    import yaml
-except ImportError:
-    print("ERROR: pyyaml is not installed. Install it with: pip install pyyaml")
-    sys.exit(1)
-
-
 FORMAT = "[%(asctime)s] - %(message)s"
 logging.basicConfig(format=FORMAT)
 logger = logging.getLogger("validate_changelog")
@@ -108,6 +101,8 @@ def is_valid_changelog_format(path: str) -> bool:
     :param path: the file to be checked
     :returns: True if the file passes validation else False
     """
+    import yaml  # noqa: PLC0415 -- deferred so the module can be imported without pyyaml
+
     try:
         config = Path("changelogs/config.yaml")
         with open(config, "rb") as config_file:
@@ -238,7 +233,8 @@ def main(ref: str) -> None:
     sys.exit(0)
 
 
-if __name__ == "__main__":
+def cli():
+    """Entry point for the validate-changelog console script."""
     parser = argparse.ArgumentParser(
         description="Validate changelog fragments for an Ansible collection"
     )
@@ -250,3 +246,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     main(args.ref)
+
+
+if __name__ == "__main__":
+    cli()
