@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
 """Sync pinned versions from pyproject.toml into .pre-commit-hooks.yaml and README.md.
 
-Reads the [project.optional-dependencies] hooks list from pyproject.toml,
-extracts the pinned package==version entries, and rewrites:
+Reads the [project.optional-dependencies] from pyproject.toml and rewrites:
 
   1. Every additional_dependencies list in .pre-commit-hooks.yaml
   2. All version callouts in README.md (inline references, rev: tags, etc.)
 
-Rules:
-  - Every hook gets the ansible-dev-tools pin.
-  - The build-import hook additionally gets the galaxy-importer pin.
-  - README rev tags (rev: vX.Y.Z / rev = "vX.Y.Z") track the ansible-dev-tools version.
+Dependency groups in pyproject.toml:
+  - "hooks"            -> ansible-dev-tools pin (used by most hooks)
+  - "galaxy-importer"  -> galaxy-importer pin (isolated, conflicts with ansible-dev-tools)
 """
 
 import re
@@ -27,19 +25,21 @@ PYPROJECT = REPO_ROOT / "pyproject.toml"
 HOOKS_YAML = REPO_ROOT / ".pre-commit-hooks.yaml"
 README = REPO_ROOT / "README.md"
 
-BUILD_IMPORT_ID = "build-import"
+GALAXY_IMPORTER_ID = "galaxy-importer"
 
 
 def parse_pins(pyproject_path: Path) -> dict[str, str]:
-    """Return {package_name: 'package==version'} from pyproject.toml hooks extra."""
+    """Return {package_name: 'package==version'} from pyproject.toml optional-deps."""
     with open(pyproject_path, "rb") as fh:
         data = tomllib.load(fh)
 
     pins: dict[str, str] = {}
-    for entry in data["project"]["optional-dependencies"]["hooks"]:
-        match = re.match(r"^([a-zA-Z0-9_-]+)==(.+)$", entry.strip())
-        if match:
-            pins[match.group(1).lower()] = entry.strip()
+    opt_deps = data["project"]["optional-dependencies"]
+    for group in opt_deps.values():
+        for entry in group:
+            match = re.match(r"^([a-zA-Z0-9_-]+)==(.+)$", entry.strip())
+            if match:
+                pins[match.group(1).lower()] = entry.strip()
     return pins
 
 
@@ -54,16 +54,15 @@ def build_dep_string(pins: dict[str, str], hook_id: str) -> str:
     adt_pin = pins.get("ansible-dev-tools")
     gi_pin = pins.get("galaxy-importer")
 
-    if not adt_pin:
-        print("ERROR: ansible-dev-tools pin not found in pyproject.toml", file=sys.stderr)
-        sys.exit(1)
-
-    if hook_id == BUILD_IMPORT_ID:
+    if hook_id == GALAXY_IMPORTER_ID:
         if not gi_pin:
             print("ERROR: galaxy-importer pin not found in pyproject.toml", file=sys.stderr)
             sys.exit(1)
-        return f"['{adt_pin}', '{gi_pin}']"
+        return f"['{gi_pin}']"
 
+    if not adt_pin:
+        print("ERROR: ansible-dev-tools pin not found in pyproject.toml", file=sys.stderr)
+        sys.exit(1)
     return f"['{adt_pin}']"
 
 
@@ -108,14 +107,12 @@ def sync_readme(pins: dict[str, str], readme_path: Path) -> bool:
         print("ERROR: ansible-dev-tools version not found", file=sys.stderr)
         sys.exit(1)
 
-    # ansible-dev-tools==X.Y.Z  (inline references)
     content = re.sub(
         r"ansible-dev-tools==[\d.]+",
         f"ansible-dev-tools=={adt_version}",
         content,
     )
 
-    # galaxy-importer==X.Y.Z  (inline references)
     if gi_version:
         content = re.sub(
             r"galaxy-importer==[\d.]+",
@@ -123,14 +120,12 @@ def sync_readme(pins: dict[str, str], readme_path: Path) -> bool:
             content,
         )
 
-    # rev: vX.Y.Z  (YAML examples)
     content = re.sub(
         r"(rev:\s+)v[\d.]+",
         rf"\g<1>v{adt_version}",
         content,
     )
 
-    # rev = "vX.Y.Z"  (TOML examples)
     content = re.sub(
         r'(rev\s*=\s*")v[\d.]+"',
         rf'\g<1>v{adt_version}"',

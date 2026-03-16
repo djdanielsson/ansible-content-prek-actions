@@ -8,7 +8,7 @@ Pre-commit / [prek](https://github.com/j178/prek) hooks for testing Ansible coll
 | --- | --- | --- |
 | `ansible-lint` | Run ansible-lint on the collection | Fast |
 | `changelog` | Validate changelog fragments exist and are formatted correctly | Fast |
-| `build-import` | Build the collection tarball and run galaxy-importer | Medium |
+| `galaxy-importer` | Build the collection tarball and run galaxy-importer | Medium |
 | `sanity` | Run tox-ansible sanity tests | **Slow** |
 | `unit` | Run tox-ansible unit tests | **Slow** |
 | `integration` | Run tox-ansible integration tests | **Slow** |
@@ -17,16 +17,18 @@ Pre-commit / [prek](https://github.com/j178/prek) hooks for testing Ansible coll
 > **Note:** Hooks marked **Slow** default to `stages: [manual]` and will not run
 > on every commit. See [Running slow hooks](#running-slow-hooks) below.
 
-All hooks use `language: python` with
-[ansible-dev-tools==26.2.0](https://github.com/ansible/ansible-dev-tools) as the
-dependency. This is the official Ansible meta-package that bundles `ansible-lint`,
-`ansible-core`, `ansible-builder`, `tox-ansible`, `pyyaml`, and more -- all at
-versions tested to work together. Pre-commit/prek automatically creates an
-**isolated virtual environment** and installs everything. No manual `pip install`
-is required.
+All hooks use `language: python` and pre-commit/prek automatically creates
+**isolated virtual environments** with pinned dependencies. No manual
+`pip install` is required.
 
-The `build-import` hook additionally installs `galaxy-importer==0.4.37`, which is
-not bundled in ansible-dev-tools.
+Most hooks use [ansible-dev-tools==26.2.0](https://github.com/ansible/ansible-dev-tools)
+as their dependency. This is the official Ansible meta-package that bundles
+`ansible-lint`, `ansible-core`, `ansible-builder`, `tox-ansible`, `pyyaml`, and
+more -- all at versions tested to work together.
+
+The `galaxy-importer` hook uses `galaxy-importer==0.4.37` in its own isolated
+environment because galaxy-importer pins an older ansible-lint that conflicts
+with ansible-dev-tools.
 
 > **Requires Python >= 3.11** (per ansible-dev-tools).
 
@@ -51,7 +53,7 @@ repos:
     hooks:
       - id: ansible-lint
       - id: changelog
-      - id: build-import
+      - id: galaxy-importer
 ```
 
 Install the git hooks:
@@ -78,7 +80,7 @@ repos:
       # Fast hooks -- run on every commit
       - id: ansible-lint
       - id: changelog
-      - id: build-import
+      - id: galaxy-importer
 
       # Slow hooks -- manual stage by default
       # Include them to make them available via manual invocation
@@ -98,7 +100,7 @@ hooks = [
   # Fast hooks -- run on every commit
   { id = "ansible-lint" },
   { id = "changelog" },
-  { id = "build-import" },
+  { id = "galaxy-importer" },
 
   # Slow hooks -- manual stage by default
   { id = "sanity" },
@@ -110,9 +112,8 @@ hooks = [
 
 ## Overriding Dependency Versions
 
-All hooks pin `ansible-dev-tools==26.2.0` to get a known-good set of tool
-versions. To use a different release of ansible-dev-tools, override
-`additional_dependencies` in your config:
+Most hooks pin `ansible-dev-tools==26.2.0` for a known-good set of tool
+versions. To use a different release, override `additional_dependencies`:
 
 ```yaml
 hooks:
@@ -121,13 +122,13 @@ hooks:
       - ansible-dev-tools==26.2.0
 ```
 
-For the `build-import` hook, remember to include `galaxy-importer` as well:
+The `galaxy-importer` hook pins `galaxy-importer` separately (it has its own
+isolated environment):
 
 ```yaml
 hooks:
-  - id: build-import
+  - id: galaxy-importer
     additional_dependencies:
-      - ansible-dev-tools==26.2.0
       - galaxy-importer==0.4.37
 ```
 
@@ -185,12 +186,13 @@ hooks:
     args: [--ref, develop]
 ```
 
-### build-import
+### galaxy-importer
 
 Builds the Ansible collection tarball and runs
 [galaxy-importer](https://github.com/ansible/galaxy-importer) validation on it.
 
-Extra dependency: `galaxy-importer==0.4.37` (not bundled in ansible-dev-tools).
+Uses `galaxy-importer==0.4.37` in its own isolated environment (separate from
+ansible-dev-tools due to ansible-lint version conflicts).
 
 ### sanity
 

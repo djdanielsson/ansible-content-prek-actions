@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Build and import an Ansible collection for validation.
+"""Run galaxy-importer to validate an Ansible collection.
 
-Builds the collection tarball and runs galaxy-importer to validate it.
+Builds the collection tarball and runs galaxy-importer validation on it.
 """
 
 import shutil
@@ -11,7 +11,7 @@ import tempfile
 
 
 def main():
-    """Entry point for the build-import-collection console script."""
+    """Entry point for the run-galaxy-importer console script."""
     tmpdir = tempfile.mkdtemp()
     try:
         result = subprocess.run(

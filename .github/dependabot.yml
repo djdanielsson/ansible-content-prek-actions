@@ -13,8 +13,10 @@ updates:
       ansible-dev-tools:
         patterns:
           - "ansible-dev-tools"
-          - "galaxy-importer"
           - "setuptools"
+      galaxy-importer:
+        patterns:
+          - "galaxy-importer"
 
   - package-ecosystem: pre-commit
     directory: /

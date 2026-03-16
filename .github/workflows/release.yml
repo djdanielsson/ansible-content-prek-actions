@@ -99,7 +99,7 @@ jobs:
               hooks:
                 - id: ansible-lint
                 - id: changelog
-                - id: build-import
+                - id: galaxy-importer
           \`\`\`
           EOF
           )"

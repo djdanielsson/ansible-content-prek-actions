@@ -22,15 +22,15 @@
   always_run: true
   additional_dependencies: ['ansible-dev-tools==26.2.0']
 
-- id: build-import
-  name: Build and Import Collection
+- id: galaxy-importer
+  name: Ansible Galaxy Importer
   description: >-
     Build the collection tarball and run galaxy-importer to validate it.
-  entry: build-import-collection
+  entry: run-galaxy-importer
   language: python
   pass_filenames: false
   always_run: true
-  additional_dependencies: ['ansible-dev-tools==26.2.0', 'galaxy-importer==0.4.37']
+  additional_dependencies: ['galaxy-importer==0.4.37']
 
 - id: sanity
   name: Ansible Sanity Tests

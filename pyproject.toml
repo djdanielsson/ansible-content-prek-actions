@@ -11,7 +11,7 @@ license = {text = "Apache-2.0"}
 
 [project.scripts]
 validate-changelog = "hooks.validate_changelog:cli"
-build-import-collection = "hooks.build_import:main"
+run-galaxy-importer = "hooks.galaxy_importer_hook:main"
 run-tox-sanity = "hooks.tox_runner:main_sanity"
 run-tox-unit = "hooks.tox_runner:main_unit"
 run-tox-integration = "hooks.tox_runner:main_integration"
@@ -19,9 +19,16 @@ ansible-ee-build = "hooks.ee_build:main"
 
 [project.optional-dependencies]
 # Pinned versions that Dependabot tracks. When Dependabot bumps a version here,
-# update the matching pin in .pre-commit-hooks.yaml to keep them in sync.
+# the sync script (scripts/sync_hooks.py) updates .pre-commit-hooks.yaml and
+# README.md to match.
+#
+# galaxy-importer is in its own group because it caps ansible-lint to an older
+# version that conflicts with ansible-dev-tools. The galaxy-importer hook gets
+# its own isolated pre-commit venv (no ansible-dev-tools).
 hooks = [
     "ansible-dev-tools==26.2.0",
+]
+galaxy-importer = [
     "galaxy-importer==0.4.37",
 ]
 
