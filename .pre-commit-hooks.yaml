@@ -14,8 +14,8 @@
   name: Validate Changelog
   description: >-
     Validate that changelog fragments exist and are properly formatted.
-    Defaults to comparing against the 'main' branch. Override the base
-    ref with args: [--ref, develop].
+    Auto-detects the base ref from the remote default branch.
+    Override with args: [--ref, develop].
   entry: validate-changelog
   language: python
   pass_filenames: false

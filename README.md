@@ -175,8 +175,9 @@ the collection. Any arguments passed via `args:` are forwarded directly.
 ### changelog
 
 Validates that changelog fragments under `changelogs/fragments/` exist and are
-properly formatted. Compares against `origin/main` by default. Override the
-base ref:
+properly formatted. Auto-detects the base ref from the remote default branch
+(falls back to the current branch's upstream tracking ref). Override the base
+ref:
 
 ```yaml
 hooks:

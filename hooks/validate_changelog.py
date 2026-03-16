@@ -173,18 +173,67 @@ def run_command(cmd: str) -> tuple[int, str, str]:
         return proc.returncode, out, err
 
 
+def _detect_default_ref() -> str:
+    """Auto-detect the best base ref to diff against.
+
+    Tries, in order:
+      1. origin/HEAD (the remote's default branch)
+      2. The current branch's upstream tracking ref
+      3. HEAD (compares staged/unstaged changes only)
+    """
+    # Remote default branch (e.g. origin/main, origin/master)
+    ret, out, _ = run_command("git symbolic-ref refs/remotes/origin/HEAD")
+    if ret == 0 and out.strip():
+        ref = out.strip().removeprefix("refs/remotes/")
+        logger.info("Auto-detected remote default branch: %s", ref)
+        return ref
+
+    # Current branch's upstream tracking ref
+    ret, out, _ = run_command("git rev-parse --abbrev-ref --symbolic-full-name @{u}")
+    if ret == 0 and out.strip():
+        ref = out.strip()
+        logger.info("Auto-detected upstream tracking ref: %s", ref)
+        return ref
+
+    logger.info("No remote ref found, falling back to HEAD")
+    return "HEAD"
+
+
+def _resolve_ref(ref: str) -> str:
+    """Find a valid git ref, trying origin/<ref> first then <ref> bare.
+
+    :param ref: The base ref name (e.g. "main", "origin/main", "HEAD~1")
+    :returns: The first ref that resolves successfully
+    """
+    candidates = [f"origin/{ref}", ref] if "/" not in ref else [ref]
+    for candidate in candidates:
+        ret, _, _ = run_command(f"git rev-parse --verify {candidate}")
+        if ret == 0:
+            logger.info("Resolved ref %r -> %s", ref, candidate)
+            return candidate
+
+    logger.error(
+        "Could not resolve ref %r. Tried: %s. "
+        "Make sure the remote exists (git fetch) or pass a valid ref with --ref.",
+        ref,
+        ", ".join(candidates),
+    )
+    sys.exit(1)
+
+
 def list_files(ref: str) -> dict[str, list[str]]:
     """List all files changed since ref, grouped by change status.
 
     :param ref: The git ref to compare to
     :returns: A dictionary keyed on change status (A, M, D, etc.) of lists of changed files
-    :raises ValueError: If the file gathering command fails
     """
-    command = "git diff origin/" + ref + " --name-status"
+    resolved = _resolve_ref(ref)
+    command = f"git diff {resolved} --name-status"
     logger.info("Executing -> %s", command)
     ret_code, stdout, stderr = run_command(command)
     if ret_code != 0:
-        raise ValueError(stderr)
+        logger.error("git diff failed: %s", stderr.strip())
+        sys.exit(1)
 
     changes: dict[str, list[str]] = defaultdict(list)
     for file in stdout.split("\n"):
@@ -240,12 +289,13 @@ def cli():
     )
     parser.add_argument(
         "--ref",
-        default="main",
-        help="Git ref to compare against (default: main)",
+        default=None,
+        help="Git ref to compare against (default: auto-detect from remote)",
     )
 
     args = parser.parse_args()
-    main(args.ref)
+    ref = args.ref if args.ref is not None else _detect_default_ref()
+    main(ref)
 
 
 if __name__ == "__main__":
