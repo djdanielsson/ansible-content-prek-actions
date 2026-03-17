@@ -21,7 +21,7 @@ All hooks use `language: python` and pre-commit/prek automatically creates
 **isolated virtual environments** with pinned dependencies. No manual
 `pip install` is required.
 
-Most hooks use [ansible-dev-tools==26.2.0](https://github.com/ansible/ansible-dev-tools)
+Most hooks use [ansible-dev-tools==26.3.0](https://github.com/ansible/ansible-dev-tools)
 as their dependency. This is the official Ansible meta-package that bundles
 `ansible-lint`, `ansible-core`, `ansible-builder`, `tox-ansible`, `pyyaml`, and
 more -- all at versions tested to work together.
@@ -49,7 +49,7 @@ Add to your collection's `.pre-commit-config.yaml`:
 ```yaml
 repos:
   - repo: https://github.com/djdanielsson/ansible-content-prek-actions
-    rev: v26.2.0
+    rev: v26.3.0
     hooks:
       - id: ansible-lint
       - id: changelog
@@ -75,7 +75,7 @@ That's it -- dependencies are installed automatically into isolated environments
 ```yaml
 repos:
   - repo: https://github.com/djdanielsson/ansible-content-prek-actions
-    rev: v26.2.0
+    rev: v26.3.0
     hooks:
       # Fast hooks -- run on every commit
       - id: ansible-lint
@@ -95,7 +95,7 @@ repos:
 ```toml
 [[repos]]
 repo = "https://github.com/djdanielsson/ansible-content-prek-actions"
-rev = "v26.2.0"
+rev = "v26.3.0"
 hooks = [
   # Fast hooks -- run on every commit
   { id = "ansible-lint" },
@@ -112,14 +112,14 @@ hooks = [
 
 ## Overriding Dependency Versions
 
-Most hooks pin `ansible-dev-tools==26.2.0` for a known-good set of tool
+Most hooks pin `ansible-dev-tools==26.3.0` for a known-good set of tool
 versions. To use a different release, override `additional_dependencies`:
 
 ```yaml
 hooks:
   - id: ansible-lint
     additional_dependencies:
-      - ansible-dev-tools==26.2.0
+      - ansible-dev-tools==26.3.0
 ```
 
 The `galaxy-importer` hook pins `galaxy-importer` separately (it has its own
