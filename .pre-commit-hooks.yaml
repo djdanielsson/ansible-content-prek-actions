@@ -8,7 +8,7 @@
   language: python
   pass_filenames: false
   always_run: true
-  additional_dependencies: ['ansible-dev-tools==26.3.0']
+  additional_dependencies: ['ansible-dev-tools==26.3.1']
 
 - id: changelog
   name: Validate Changelog
@@ -20,7 +20,7 @@
   language: python
   pass_filenames: false
   always_run: true
-  additional_dependencies: ['ansible-dev-tools==26.3.0']
+  additional_dependencies: ['ansible-dev-tools==26.3.1']
 
 - id: galaxy-importer
   name: Ansible Galaxy Importer
@@ -42,7 +42,7 @@
   pass_filenames: false
   always_run: true
   stages: [manual]
-  additional_dependencies: ['ansible-dev-tools==26.3.0']
+  additional_dependencies: ['ansible-dev-tools==26.3.1']
 
 - id: unit
   name: Ansible Unit Tests
@@ -54,7 +54,7 @@
   pass_filenames: false
   always_run: true
   stages: [manual]
-  additional_dependencies: ['ansible-dev-tools==26.3.0']
+  additional_dependencies: ['ansible-dev-tools==26.3.1']
 
 - id: integration
   name: Ansible Integration Tests
@@ -66,7 +66,7 @@
   pass_filenames: false
   always_run: true
   stages: [manual]
-  additional_dependencies: ['ansible-dev-tools==26.3.0']
+  additional_dependencies: ['ansible-dev-tools==26.3.1']
 
 - id: ee-build
   name: Build Execution Environment
@@ -78,4 +78,4 @@
   pass_filenames: false
   always_run: true
   stages: [manual]
-  additional_dependencies: ['ansible-dev-tools==26.3.0']
+  additional_dependencies: ['ansible-dev-tools==26.3.1']
