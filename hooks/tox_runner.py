@@ -25,6 +25,24 @@ skip =
 """
 
 
+PASS_ENV_BLOCK = """
+[testenv]
+pass_env =
+    GITHUB_TOKEN
+    ANSIBLE_GALAXY_SERVER*
+"""
+
+
+def _ensure_passenv(path: str) -> None:
+    """Append pass_env to *path* if not already present."""
+    with open(path) as fh:
+        content = fh.read()
+    if "ANSIBLE_GALAXY_SERVER" in content:
+        return
+    with open(path, "a") as fh:
+        fh.write(PASS_ENV_BLOCK)
+
+
 def run_tox(test_type: str, extra_args: list[str] | None = None):
     """Run tox-ansible for the given test type.
 
@@ -38,6 +56,8 @@ def run_tox(test_type: str, extra_args: list[str] | None = None):
         with open("tox-ansible.ini", "w") as fh:
             fh.write(DEFAULT_TOX_ANSIBLE_INI)
         created_default = True
+
+    _ensure_passenv("tox-ansible.ini")
 
     try:
         result = subprocess.run(
