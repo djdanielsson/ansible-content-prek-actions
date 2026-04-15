@@ -4,7 +4,9 @@
   description: >-
     Run ansible-lint to check playbooks for practices and behavior
     that could potentially be improved.
-  entry: ansible-lint
+    Supports --galaxy-server-url, --galaxy-server-auth-url, and
+    --galaxy-server-token-env for private Galaxy server authentication.
+  entry: run-ansible-lint
   language: python
   pass_filenames: false
   always_run: true
@@ -17,6 +19,8 @@
     Runs antsibull-changelog lint for thorough validation.
     Auto-detects the base ref from the remote default branch.
     Override with args: [--ref, develop].
+    Supports --galaxy-server-url, --galaxy-server-auth-url, and
+    --galaxy-server-token-env for private Galaxy server authentication.
   entry: validate-changelog
   language: python
   pass_filenames: false
@@ -27,6 +31,8 @@
   name: Ansible Galaxy Importer
   description: >-
     Build the collection tarball and run galaxy-importer to validate it.
+    Supports --galaxy-server-url, --galaxy-server-auth-url, and
+    --galaxy-server-token-env for private Galaxy server authentication.
   entry: run-galaxy-importer
   language: python
   pass_filenames: false
@@ -38,6 +44,8 @@
   description: >-
     WARNING: SLOW. Run tox-ansible sanity tests. Uses tox-ansible.ini
     if present, otherwise creates a sensible default.
+    Supports --galaxy-server-url, --galaxy-server-auth-url, and
+    --galaxy-server-token-env for private Galaxy server authentication.
   entry: run-tox-sanity
   language: python
   pass_filenames: false
@@ -50,6 +58,8 @@
   description: >-
     WARNING: SLOW. Run tox-ansible unit tests. Uses tox-ansible.ini
     if present, otherwise creates a sensible default.
+    Supports --galaxy-server-url, --galaxy-server-auth-url, and
+    --galaxy-server-token-env for private Galaxy server authentication.
   entry: run-tox-unit
   language: python
   pass_filenames: false
@@ -62,6 +72,8 @@
   description: >-
     WARNING: SLOW. Run tox-ansible integration tests. Uses tox-ansible.ini
     if present, otherwise creates a sensible default.
+    Supports --galaxy-server-url, --galaxy-server-auth-url, and
+    --galaxy-server-token-env for private Galaxy server authentication.
   entry: run-tox-integration
   language: python
   pass_filenames: false
@@ -74,6 +86,8 @@
   description: >-
     WARNING: SLOW. Build an Ansible execution environment image using
     ansible-builder. Requires podman or docker.
+    Supports --galaxy-server-url, --galaxy-server-auth-url, and
+    --galaxy-server-token-env for private Galaxy server authentication.
   entry: ansible-ee-build
   language: python
   pass_filenames: false
