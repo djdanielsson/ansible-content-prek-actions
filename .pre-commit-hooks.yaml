@@ -37,7 +37,7 @@
   language: python
   pass_filenames: false
   always_run: true
-  additional_dependencies: ['galaxy-importer==0.4.37']
+  additional_dependencies: ['galaxy-importer==0.4.38']
 
 - id: sanity
   name: Ansible Sanity Tests

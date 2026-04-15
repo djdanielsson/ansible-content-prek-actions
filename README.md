@@ -26,7 +26,7 @@ as their dependency. This is the official Ansible meta-package that bundles
 `ansible-lint`, `ansible-core`, `ansible-builder`, `tox-ansible`, `pyyaml`, and
 more -- all at versions tested to work together.
 
-The `galaxy-importer` hook uses `galaxy-importer==0.4.37` in its own isolated
+The `galaxy-importer` hook uses `galaxy-importer==0.4.38` in its own isolated
 environment because galaxy-importer pins an older ansible-lint that conflicts
 with ansible-dev-tools.
 
@@ -129,7 +129,7 @@ isolated environment):
 hooks:
   - id: galaxy-importer
     additional_dependencies:
-      - galaxy-importer==0.4.37
+      - galaxy-importer==0.4.38
 ```
 
 ## Running Slow Hooks
@@ -191,7 +191,7 @@ hooks:
 Builds the Ansible collection tarball and runs
 [galaxy-importer](https://github.com/ansible/galaxy-importer) validation on it.
 
-Uses `galaxy-importer==0.4.37` in its own isolated environment (separate from
+Uses `galaxy-importer==0.4.38` in its own isolated environment (separate from
 ansible-dev-tools due to ansible-lint version conflicts).
 
 ### sanity
