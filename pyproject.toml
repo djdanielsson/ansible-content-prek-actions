@@ -10,6 +10,7 @@ description = "Pre-commit hooks for Ansible collection repositories"
 license = {text = "Apache-2.0"}
 
 [project.scripts]
+run-ansible-lint = "hooks.ansible_lint_hook:main"
 validate-changelog = "hooks.validate_changelog:cli"
 run-galaxy-importer = "hooks.galaxy_importer_hook:main"
 run-tox-sanity = "hooks.tox_runner:main_sanity"

@@ -5,9 +5,12 @@ Wraps tox-ansible with automatic tox-ansible.ini creation when one is
 not already present in the collection root.
 """
 
+import argparse
 import os
 import subprocess
 import sys
+
+from hooks.galaxy_auth import add_galaxy_server_args, apply_galaxy_server_env
 
 DEFAULT_TOX_ANSIBLE_INI = """\
 [ansible]
@@ -85,25 +88,34 @@ def run_tox(test_type: str, extra_args: list[str] | None = None):
                 pass
 
 
+def _parse_and_setup(argv: list[str]) -> list[str]:
+    """Parse galaxy-server args from *argv*, apply them, return the rest."""
+    parser = argparse.ArgumentParser(add_help=False)
+    add_galaxy_server_args(parser)
+    known, remaining = parser.parse_known_args(argv)
+    apply_galaxy_server_env(known)
+    return remaining
+
+
 def main_sanity():
     """Entry point for the run-tox-sanity console script."""
-    run_tox("sanity", sys.argv[1:])
+    run_tox("sanity", _parse_and_setup(sys.argv[1:]))
 
 
 def main_unit():
     """Entry point for the run-tox-unit console script."""
-    run_tox("unit", sys.argv[1:])
+    run_tox("unit", _parse_and_setup(sys.argv[1:]))
 
 
 def main_integration():
     """Entry point for the run-tox-integration console script."""
-    run_tox("integration", sys.argv[1:])
+    run_tox("integration", _parse_and_setup(sys.argv[1:]))
 
 
 if __name__ == "__main__":
-    import argparse
-
     parser = argparse.ArgumentParser()
+    add_galaxy_server_args(parser)
     parser.add_argument("test_type", choices=["sanity", "unit", "integration"])
     args, extra = parser.parse_known_args()
+    apply_galaxy_server_env(args)
     run_tox(args.test_type, extra)

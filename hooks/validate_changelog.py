@@ -284,6 +284,8 @@ def main(ref: str) -> None:
 
 def cli():
     """Entry point for the validate-changelog console script."""
+    from hooks.galaxy_auth import add_galaxy_server_args, apply_galaxy_server_env  # noqa: PLC0415
+
     parser = argparse.ArgumentParser(
         description="Validate changelog fragments for an Ansible collection"
     )
@@ -292,8 +294,10 @@ def cli():
         default=None,
         help="Git ref to compare against (default: auto-detect from remote)",
     )
+    add_galaxy_server_args(parser)
 
     args = parser.parse_args()
+    apply_galaxy_server_env(args)
     ref = args.ref if args.ref is not None else _detect_default_ref()
     main(ref)
 
