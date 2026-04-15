@@ -27,6 +27,7 @@ ansible-ee-build = "hooks.ee_build:main"
 # its own isolated pre-commit venv (no ansible-dev-tools).
 hooks = [
     "ansible-dev-tools==26.4.1",
+    "antsibull-changelog==0.35.0",
 ]
 galaxy-importer = [
     "galaxy-importer==0.4.37",
