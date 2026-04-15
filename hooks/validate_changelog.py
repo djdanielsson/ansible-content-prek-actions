@@ -244,6 +244,30 @@ def list_files(ref: str) -> dict[str, list[str]]:
     return changes
 
 
+def run_antsibull_lint() -> bool:
+    """Run antsibull-changelog lint to validate all fragments.
+
+    :returns: True if lint passes or antsibull-changelog is not installed
+    """
+    import shutil  # noqa: PLC0415
+
+    if not shutil.which("antsibull-changelog"):
+        logger.info("antsibull-changelog not found, skipping lint")
+        return True
+
+    logger.info("Running antsibull-changelog lint")
+    ret, stdout, stderr = run_command("antsibull-changelog lint")
+    output = (stdout + stderr).strip()
+    if output:
+        for line in output.splitlines():
+            logger.info("%s", line)
+    if ret != 0:
+        logger.error("antsibull-changelog lint failed (exit code %d)", ret)
+        return False
+    logger.info("antsibull-changelog lint passed")
+    return True
+
+
 def main(ref: str) -> None:
     """Run the script.
 
@@ -279,6 +303,10 @@ def main(ref: str) -> None:
                     invalid_changelog_files,
                 )
                 sys.exit(1)
+
+    if not run_antsibull_lint():
+        sys.exit(1)
+
     sys.exit(0)
 
 

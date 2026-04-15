@@ -14,13 +14,14 @@
   name: Validate Changelog
   description: >-
     Validate that changelog fragments exist and are properly formatted.
+    Runs antsibull-changelog lint for thorough validation.
     Auto-detects the base ref from the remote default branch.
     Override with args: [--ref, develop].
   entry: validate-changelog
   language: python
   pass_filenames: false
   always_run: true
-  additional_dependencies: ['ansible-dev-tools==26.4.1']
+  additional_dependencies: ['ansible-dev-tools==26.4.1', 'antsibull-changelog==0.35.0']
 
 - id: galaxy-importer
   name: Ansible Galaxy Importer
