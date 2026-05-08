@@ -21,12 +21,12 @@ All hooks use `language: python` and pre-commit/prek automatically creates
 **isolated virtual environments** with pinned dependencies. No manual
 `pip install` is required.
 
-Most hooks use [ansible-dev-tools==26.4.5](https://github.com/ansible/ansible-dev-tools)
+Most hooks use [ansible-dev-tools==26.4.6](https://github.com/ansible/ansible-dev-tools)
 as their dependency. This is the official Ansible meta-package that bundles
 `ansible-lint`, `ansible-core`, `ansible-builder`, `tox-ansible`, `pyyaml`, and
 more -- all at versions tested to work together.
 
-The `galaxy-importer` hook uses `galaxy-importer==0.4.38` in its own isolated
+The `galaxy-importer` hook uses `galaxy-importer==0.4.39` in its own isolated
 environment because galaxy-importer pins an older ansible-lint that conflicts
 with ansible-dev-tools.
 
@@ -49,7 +49,7 @@ Add to your collection's `.pre-commit-config.yaml`:
 ```yaml
 repos:
   - repo: https://github.com/djdanielsson/ansible-content-prek-actions
-    rev: v26.4.5
+    rev: v26.4.6
     hooks:
       - id: ansible-lint
       - id: changelog
@@ -75,7 +75,7 @@ That's it -- dependencies are installed automatically into isolated environments
 ```yaml
 repos:
   - repo: https://github.com/djdanielsson/ansible-content-prek-actions
-    rev: v26.4.5
+    rev: v26.4.6
     hooks:
       # Fast hooks -- run on every commit
       - id: ansible-lint
@@ -95,7 +95,7 @@ repos:
 ```toml
 [[repos]]
 repo = "https://github.com/djdanielsson/ansible-content-prek-actions"
-rev = "v26.4.5"
+rev = "v26.4.6"
 hooks = [
   # Fast hooks -- run on every commit
   { id = "ansible-lint" },
@@ -112,14 +112,14 @@ hooks = [
 
 ## Overriding Dependency Versions
 
-Most hooks pin `ansible-dev-tools==26.4.5` for a known-good set of tool
+Most hooks pin `ansible-dev-tools==26.4.6` for a known-good set of tool
 versions. To use a different release, override `additional_dependencies`:
 
 ```yaml
 hooks:
   - id: ansible-lint
     additional_dependencies:
-      - ansible-dev-tools==26.4.5
+      - ansible-dev-tools==26.4.6
 ```
 
 The `galaxy-importer` hook pins `galaxy-importer` separately (it has its own
@@ -129,7 +129,7 @@ isolated environment):
 hooks:
   - id: galaxy-importer
     additional_dependencies:
-      - galaxy-importer==0.4.38
+      - galaxy-importer==0.4.39
 ```
 
 ## Running Slow Hooks
@@ -191,7 +191,7 @@ hooks:
 Builds the Ansible collection tarball and runs
 [galaxy-importer](https://github.com/ansible/galaxy-importer) validation on it.
 
-Uses `galaxy-importer==0.4.38` in its own isolated environment (separate from
+Uses `galaxy-importer==0.4.39` in its own isolated environment (separate from
 ansible-dev-tools due to ansible-lint version conflicts).
 
 ### sanity
