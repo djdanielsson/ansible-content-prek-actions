@@ -27,7 +27,7 @@ ansible-ee-build = "hooks.ee_build:main"
 # version that conflicts with ansible-dev-tools. The galaxy-importer hook gets
 # its own isolated pre-commit venv (no ansible-dev-tools).
 hooks = [
-    "ansible-dev-tools==26.6.1",
+    "ansible-dev-tools==26.7.2",
     "antsibull-changelog==0.35.1",
 ]
 galaxy-importer = [
