@@ -31,7 +31,7 @@ hooks = [
     "antsibull-changelog==0.35.1",
 ]
 galaxy-importer = [
-    "galaxy-importer==0.4.41",
+    "galaxy-importer==0.4.42",
 ]
 
 [tool.setuptools.packages.find]
