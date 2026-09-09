@@ -26,6 +26,7 @@ HOOKS_YAML = REPO_ROOT / ".pre-commit-hooks.yaml"
 README = REPO_ROOT / "README.md"
 
 GALAXY_IMPORTER_ID = "galaxy-importer"
+CHANGELOG_HOOK_ID = "changelog"
 
 
 def parse_pins(pyproject_path: Path) -> dict[str, str]:
@@ -59,6 +60,16 @@ def build_dep_string(pins: dict[str, str], hook_id: str) -> str:
             print("ERROR: galaxy-importer pin not found in pyproject.toml", file=sys.stderr)
             sys.exit(1)
         return f"['{gi_pin}']"
+
+    if hook_id == CHANGELOG_HOOK_ID:
+        ac_pin = pins.get("antsibull-changelog")
+        if not adt_pin:
+            print("ERROR: ansible-dev-tools pin not found in pyproject.toml", file=sys.stderr)
+            sys.exit(1)
+        if not ac_pin:
+            print("ERROR: antsibull-changelog pin not found in pyproject.toml", file=sys.stderr)
+            sys.exit(1)
+        return f"['{adt_pin}', '{ac_pin}']"
 
     if not adt_pin:
         print("ERROR: ansible-dev-tools pin not found in pyproject.toml", file=sys.stderr)

@@ -25,7 +25,7 @@
   language: python
   pass_filenames: false
   always_run: true
-  additional_dependencies: ['ansible-dev-tools==26.8.0']
+  additional_dependencies: ['ansible-dev-tools==26.8.0', 'antsibull-changelog==0.35.1']
 
 - id: galaxy-importer
   name: Ansible Galaxy Importer
@@ -37,7 +37,7 @@
   language: python
   pass_filenames: false
   always_run: true
-  additional_dependencies: ['galaxy-importer==0.4.42']
+  additional_dependencies: ['galaxy-importer==0.4.43']
 
 - id: sanity
   name: Ansible Sanity Tests

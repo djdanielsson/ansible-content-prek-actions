@@ -149,6 +149,19 @@ def is_valid_changelog_format(path: str) -> bool:
                         type(section[key]),
                     )
                     return False
+                elif key != "release_summary":
+                    for index, item in enumerate(section[key]):
+                        if not isinstance(item, str):
+                            logger.error(
+                                "Changelog section %s from file %s list item %d must be a string, "
+                                "%s found instead. Quote or use a block scalar for entries that "
+                                "contain colons (for example ``state: absent``).",
+                                key,
+                                path,
+                                index,
+                                type(item).__name__,
+                            )
+                            return False
         return True
     except (OSError, yaml.YAMLError) as exc:
         msg = f"yaml loading error for file {path} -> {exc}"
@@ -252,8 +265,11 @@ def run_antsibull_lint() -> bool:
     import shutil  # noqa: PLC0415
 
     if not shutil.which("antsibull-changelog"):
-        logger.info("antsibull-changelog not found, skipping lint")
-        return True
+        logger.error(
+            "antsibull-changelog not found in PATH. The changelog hook must install "
+            "antsibull-changelog via additional_dependencies."
+        )
+        return False
 
     logger.info("Running antsibull-changelog lint")
     ret, stdout, stderr = run_command("antsibull-changelog lint")
@@ -279,7 +295,11 @@ def main(ref: str) -> None:
             logger.info("This PR looks like a release!")
             sys.exit(0)
 
-        changelog = [x for x in changes["A"] if is_changelog_file(x)]
+        changelog = [
+            x
+            for x in changes.get("A", []) + changes.get("M", [])
+            if is_changelog_file(x)
+        ]
         logger.info("changelog files -> %s", changelog)
         if not changelog:
             if is_changelog_needed(changes):
