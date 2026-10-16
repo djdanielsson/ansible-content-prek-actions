@@ -18,15 +18,6 @@ updates:
         patterns:
           - "galaxy-importer"
 
-  - package-ecosystem: pre-commit
-    directory: /
-    schedule:
-      interval: weekly
-    commit-message:
-      prefix: "deps"
-    labels:
-      - dependencies
-
   - package-ecosystem: github-actions
     directory: /
     schedule:
