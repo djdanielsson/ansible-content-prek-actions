@@ -132,6 +132,15 @@ hooks:
       - galaxy-importer==0.4.43
 ```
 
+## Updates and Releases
+
+Dependabot checks Python dependencies and GitHub Actions weekly. Its pull
+requests are merged automatically after checks pass. Merges that change the
+hook code or pinned dependencies create a GitHub release and update the hook
+manifest and README automatically. Release tags start at the pinned
+`ansible-dev-tools` version; additional releases at the same dependency version
+increment the patch number.
+
 ## Running Slow Hooks
 
 Hooks marked **Slow** (`sanity`, `unit`, `integration`, `ee-build`) are configured

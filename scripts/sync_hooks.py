@@ -11,6 +11,7 @@ Dependency groups in pyproject.toml:
   - "galaxy-importer"  -> galaxy-importer pin (isolated, conflicts with ansible-dev-tools)
 """
 
+import argparse
 import re
 import sys
 from pathlib import Path
@@ -106,7 +107,9 @@ def sync_hooks(pins: dict[str, str], hooks_path: Path) -> bool:
     return False
 
 
-def sync_readme(pins: dict[str, str], readme_path: Path) -> bool:
+def sync_readme(
+    pins: dict[str, str], readme_path: Path, release_tag: str | None = None
+) -> bool:
     """Sync version references in README.md and return True if changes were made."""
     content = readme_path.read_text()
     original = content
@@ -116,6 +119,11 @@ def sync_readme(pins: dict[str, str], readme_path: Path) -> bool:
 
     if not adt_version:
         print("ERROR: ansible-dev-tools version not found", file=sys.stderr)
+        sys.exit(1)
+
+    release_ref = release_tag or f"v{adt_version}"
+    if not re.fullmatch(r"v\d+\.\d+\.\d+", release_ref):
+        print(f"ERROR: invalid release tag: {release_ref}", file=sys.stderr)
         sys.exit(1)
 
     content = re.sub(
@@ -133,13 +141,13 @@ def sync_readme(pins: dict[str, str], readme_path: Path) -> bool:
 
     content = re.sub(
         r"(rev:\s+)v[\d.]+",
-        rf"\g<1>v{adt_version}",
+        lambda match: f"{match.group(1)}{release_ref}",
         content,
     )
 
     content = re.sub(
         r'(rev\s*=\s*")v[\d.]+"',
-        rf'\g<1>v{adt_version}"',
+        lambda match: f'{match.group(1)}{release_ref}"',
         content,
     )
 
@@ -150,9 +158,16 @@ def sync_readme(pins: dict[str, str], readme_path: Path) -> bool:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--release-tag",
+        help="Tag to use in README examples (defaults to v<ansible-dev-tools version>)",
+    )
+    args = parser.parse_args()
+
     pins = parse_pins(PYPROJECT)
     changed_hooks = sync_hooks(pins, HOOKS_YAML)
-    changed_readme = sync_readme(pins, README)
+    changed_readme = sync_readme(pins, README, args.release_tag)
 
     if changed_hooks:
         print("Updated .pre-commit-hooks.yaml")

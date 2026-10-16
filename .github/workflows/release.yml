@@ -5,6 +5,11 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+
+concurrency:
+  group: release-main
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -17,6 +22,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
         with:
           fetch-depth: 0
+          ref: main
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Python
@@ -24,52 +30,34 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Check for releasable changes and calculate release tag
+        id: release_info
+        run: |
+          git fetch --tags origin
+          python scripts/release_metadata.py >> "$GITHUB_OUTPUT"
+
       - name: Sync hooks and README versions from pyproject.toml
-        run: python scripts/sync_hooks.py
-
-      - name: Read ansible-dev-tools version from pyproject.toml
-        id: versions
-        run: |
-          adt_version=$(python3 -c "
-          import tomllib, re, pathlib
-          data = tomllib.loads(pathlib.Path('pyproject.toml').read_text())
-          for dep in data['project']['optional-dependencies']['hooks']:
-              m = re.match(r'ansible-dev-tools==(.+)', dep.strip())
-              if m:
-                  print(m.group(1))
-                  break
-          ")
-          echo "adt_version=${adt_version}" >> "$GITHUB_OUTPUT"
-          echo "tag=v${adt_version}" >> "$GITHUB_OUTPUT"
-
-      - name: Check if tag already exists
-        id: check_tag
-        run: |
-          tag="${{ steps.versions.outputs.tag }}"
-          if git rev-parse "refs/tags/${tag}" >/dev/null 2>&1; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-          fi
+        if: steps.release_info.outputs.release == 'true'
+        run: python scripts/sync_hooks.py --release-tag "${{ steps.release_info.outputs.tag }}"
 
       - name: Commit hook sync changes (if any)
-        if: steps.check_tag.outputs.exists == 'false'
+        if: steps.release_info.outputs.release == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .pre-commit-hooks.yaml README.md
           if ! git diff --cached --quiet; then
             git commit -m "deps: sync hooks and README versions from pyproject.toml"
-            git push
+            git push origin HEAD:main
           fi
 
       - name: Create tag and release
-        if: steps.check_tag.outputs.exists == 'false'
+        if: steps.release_info.outputs.release == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          tag="${{ steps.versions.outputs.tag }}"
-          adt_version="${{ steps.versions.outputs.adt_version }}"
+          tag="${{ steps.release_info.outputs.tag }}"
+          adt_version="${{ steps.release_info.outputs.adt_version }}"
 
           git tag "${tag}"
           git push origin "${tag}"
@@ -85,8 +73,10 @@ jobs:
           $(python3 -c "
           import tomllib, pathlib
           data = tomllib.loads(pathlib.Path('pyproject.toml').read_text())
-          for dep in data['project']['optional-dependencies']['hooks']:
-              print(f'  {dep}')
+          for group, deps in data['project']['optional-dependencies'].items():
+              print(f'  [{group}]')
+              for dep in deps:
+                  print(f'    {dep}')
           ")
           \`\`\`
 
