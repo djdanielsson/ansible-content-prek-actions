@@ -49,7 +49,7 @@ Add to your collection's `.pre-commit-config.yaml`:
 ```yaml
 repos:
   - repo: https://github.com/djdanielsson/ansible-content-prek-actions
-    rev: v26.10.0
+    rev: v26.10.1
     hooks:
       - id: ansible-lint
       - id: changelog
@@ -75,7 +75,7 @@ That's it -- dependencies are installed automatically into isolated environments
 ```yaml
 repos:
   - repo: https://github.com/djdanielsson/ansible-content-prek-actions
-    rev: v26.10.0
+    rev: v26.10.1
     hooks:
       # Fast hooks -- run on every commit
       - id: ansible-lint
@@ -95,7 +95,7 @@ repos:
 ```toml
 [[repos]]
 repo = "https://github.com/djdanielsson/ansible-content-prek-actions"
-rev = "v26.10.0"
+rev = "v26.10.1"
 hooks = [
   # Fast hooks -- run on every commit
   { id = "ansible-lint" },
