@@ -25,7 +25,7 @@
   language: python
   pass_filenames: false
   always_run: true
-  additional_dependencies: ['ansible-dev-tools==26.11.0', 'antsibull-changelog==0.36.0']
+  additional_dependencies: ['ansible-dev-tools==26.11.0', 'antsibull-changelog==0.37.0']
 
 - id: galaxy-importer
   name: Ansible Galaxy Importer
